@@ -55,13 +55,13 @@ export default function App() {
 
   return (
     <>
-      <NavBar movies={movies}>
+      <NavBar>
         <Search />
         <NumResults movies={movies} />
       </NavBar>
 
       <Main>
-        <ListBox movies={movies}>
+        <ListBox>
           <MovieList movies={movies} />
         </ListBox>
         <WatchedBox />
