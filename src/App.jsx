@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { Children, useState } from "react";
 
 const tempMovieData = [
   {
@@ -55,19 +55,26 @@ export default function App() {
 
   return (
     <>
-      <NavBar movies={movies} />
+      <NavBar movies={movies}>
+        <Search />
+        <NumResults movies={movies} />
+      </NavBar>
 
-      <Main movies={movies} />
+      <Main>
+        <ListBox movies={movies}>
+          <MovieList movies={movies} />
+        </ListBox>
+        <WatchedBox />
+      </Main>
     </>
   );
 }
 
-const NavBar = ({ movies }) => {
+const NavBar = ({ children }) => {
   return (
     <nav className="nav-bar">
       <Logo />
-      <Search />
-      <NumResults movies={movies} />
+      {children}
     </nav>
   );
 };
@@ -102,16 +109,11 @@ const NumResults = ({ movies }) => {
   );
 };
 
-const Main = ({ movies }) => {
-  return (
-    <main className="main">
-      <ListBox movies={movies} />
-      <WatchedBox />
-    </main>
-  );
+const Main = ({ children }) => {
+  return <main className="main">{children}</main>;
 };
 
-const ListBox = ({ movies }) => {
+const ListBox = ({ children }) => {
   const [isOpen1, setIsOpen1] = useState(true);
   return (
     <div className="box">
@@ -121,7 +123,7 @@ const ListBox = ({ movies }) => {
       >
         {isOpen1 ? "–" : "+"}
       </button>
-      {isOpen1 && <MovieList movies={movies} />}
+      {isOpen1 && children}
     </div>
   );
 };
