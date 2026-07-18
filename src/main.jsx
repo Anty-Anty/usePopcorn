@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
-// import './index.css'
-// import App from './App.jsx'
+import './index.css'
+import App from './App.jsx'
 
 import StarRating from "./StarRating";
 
@@ -19,10 +19,10 @@ const Test = () => {
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>
-    {/* <App /> */}
-    <StarRating maxRating={5} defaultRating={2} />
+    <App />
+    {/* <StarRating maxRating={5} defaultRating={2} />
     <StarRating maxRating={10} />
-    <StarRating size={24} color="red" />
-    <Test />
+    <StarRating size={24} color="red" /> */}
+    {/* <Test /> */}
   </StrictMode>
 );
