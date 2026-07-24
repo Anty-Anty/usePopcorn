@@ -1,4 +1,4 @@
-import { Children, useEffect, useState } from "react";
+import { Children, useState } from "react";
 
 const tempMovieData = [
   {
@@ -50,42 +50,9 @@ const tempWatchedData = [
 const average = (arr) =>
   arr.reduce((acc, cur, i, arr) => acc + cur / arr.length, 0);
 
-const KEY = '86e5ee43';
-
 export default function App() {
-  const [movies, setMovies] = useState([]);
-  const [watched, setWatched] = useState([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState('');
-  const query = 'Interstellar'
-
-  useEffect(() => {
-    async function fetchMovies() {
-      try {
-        setIsLoading(true);
-        const res = await fetch(`http://www.omdbapi.com/?apikey=${KEY}&s=${query}`);
-
-        if (!res.ok) throw new Error("Something went wrong with fetching movies")
-
-
-        const data = await res.json();
-        if (data.Response === 'False') throw new Error("Movie is not found")
-
-        setMovies(data.Search);
-        console.log(data);
-      } catch (err) {
-        console.error(err.message)
-        setError(err.message)
-      } finally {
-        setIsLoading(false);
-      }
-    }
-    fetchMovies();
-  }, [])
-
-
-
-
+  const [movies, setMovies] = useState(tempMovieData);
+  const [watched, setWatched] = useState(tempWatchedData);
 
   return (
     <>
@@ -96,10 +63,7 @@ export default function App() {
 
       <Main>
         <Box>
-          {/* {isLoading? <Loader/> : <MovieList movies={movies} />} */}
-          {isLoading && <Loader />}
-          {!isLoading && !error && <MovieList movies={movies} />}
-          {error && <ErrorMessage message={error} />}
+          <MovieList movies={movies} />
         </Box>
         <Box>
           <WatchedSummary watched={watched} />
@@ -108,16 +72,6 @@ export default function App() {
       </Main>
     </>
   );
-}
-
-const Loader = () => {
-  return <p className="loader">Loading...</p>
-};
-
-const ErrorMessage = ({ message }) => {
-  return <p className="error">
-    <span>Error</span> {message}
-  </p>
 }
 
 const NavBar = ({ children }) => {
