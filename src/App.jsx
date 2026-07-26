@@ -53,16 +53,34 @@ const average = (arr) =>
 const KEY = '86e5ee43';
 
 export default function App() {
+  const [query, setQuery] = useState("");
   const [movies, setMovies] = useState([]);
   const [watched, setWatched] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
-  const query = 'Interstellar'
+  const [selectedId, setSelectedId] = useState('tt4244162');
+
+
+
+  // useEffect(function () {
+  //   console.log('A')
+  // }, []);
+
+  // useEffect(function () {
+  //   console.log('B')
+  // });
+
+  //   useEffect(function () {
+  //   console.log('D')
+  // }, [query]);
+
+  // console.log('C')
 
   useEffect(() => {
     async function fetchMovies() {
       try {
         setIsLoading(true);
+        setError('');
         const res = await fetch(`http://www.omdbapi.com/?apikey=${KEY}&s=${query}`);
 
         if (!res.ok) throw new Error("Something went wrong with fetching movies")
@@ -80,8 +98,15 @@ export default function App() {
         setIsLoading(false);
       }
     }
+
+    if (!query.length) {
+      setMovies([]);
+      setError('');
+      return
+    }
+
     fetchMovies();
-  }, [])
+  }, [query])
 
 
 
@@ -90,7 +115,7 @@ export default function App() {
   return (
     <>
       <NavBar>
-        <Search />
+        <Search query={query} setQuery={setQuery} />
         <NumResults movies={movies} />
       </NavBar>
 
@@ -102,8 +127,12 @@ export default function App() {
           {error && <ErrorMessage message={error} />}
         </Box>
         <Box>
-          <WatchedSummary watched={watched} />
-          <WatchedMovieList watched={watched} />
+          {selectedId ? 
+          <MovieDetails selectedId={selectedId} /> :
+           <>
+           <WatchedSummary watched={watched} />
+            <WatchedMovieList watched={watched} />
+            </>}
         </Box>
       </Main>
     </>
@@ -138,8 +167,8 @@ const Logo = () => {
   );
 };
 
-const Search = () => {
-  const [query, setQuery] = useState("");
+const Search = ({ query, setQuery }) => {
+
   return (
     <input
       className="search"
@@ -220,6 +249,10 @@ const Movie = ({ movie }) => {
       </div>
     </li>
   );
+};
+
+const MovieDetails = ({ selectedId }) => {
+  return <div className="details">{selectedId}</div>
 };
 
 const WatchedSummary = ({ watched }) => {
