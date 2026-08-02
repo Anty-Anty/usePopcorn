@@ -90,15 +90,19 @@ export default function App() {
   };
 
   const handleDeleteWached = (id) => {
-    setWatched((watched)=>watched.filter((movie) => movie.imdbID !== id))
+    setWatched((watched) => watched.filter((movie) => movie.imdbID !== id))
   };
 
   useEffect(() => {
+
+    const controller = new AbortController();
+
     async function fetchMovies() {
       try {
         setIsLoading(true);
         setError('');
-        const res = await fetch(`http://www.omdbapi.com/?apikey=${KEY}&s=${query}`);
+        const res = await fetch(`http://www.omdbapi.com/?apikey=${KEY}&s=${query}`,
+          { signal: controller.signal });
 
         if (!res.ok) throw new Error("Something went wrong with fetching movies")
 
@@ -107,10 +111,12 @@ export default function App() {
         if (data.Response === 'False') throw new Error("Movie is not found")
 
         setMovies(data.Search);
-        console.log(data);
+        setError('');
       } catch (err) {
         console.error(err.message)
-        setError(err.message)
+        if (err.name !== "AbortError") {
+          setError(err.message)
+        }
       } finally {
         setIsLoading(false);
       }
@@ -123,6 +129,11 @@ export default function App() {
     }
 
     fetchMovies();
+
+    return () => {
+      controller.abort();
+    }
+
   }, [query])
 
 
@@ -154,7 +165,7 @@ export default function App() {
           ) : (
             <>
               <WatchedSummary watched={watched} />
-              <WatchedMovieList watched={watched} onDeleteWatched={handleDeleteWached}/>
+              <WatchedMovieList watched={watched} onDeleteWatched={handleDeleteWached} />
             </>
           )}
         </Box>
@@ -320,6 +331,14 @@ const MovieDetails = ({ selectedId, onCloseMovie, onAddWatched, watched }) => {
     getMovieDetails();
   }, [selectedId])
 
+  useEffect(() => {
+    if (!title) return;
+    document.title = `Movie | ${title}`;
+    return () => {
+      document.title = 'usePopcorn';
+    }
+  }, [title])
+
   return (
     <div className="details">
       {isLoading ? <Loader /> :
@@ -391,7 +410,7 @@ const WatchedMovieList = ({ watched, onDeleteWatched }) => {
   return (
     <ul className="list">
       {watched.map((movie) => (
-        <WatchedMovie movie={movie} key={movie.imdbID} onDeleteWatched={onDeleteWatched}/>
+        <WatchedMovie movie={movie} key={movie.imdbID} onDeleteWatched={onDeleteWatched} />
       ))}
     </ul>
   );
@@ -415,7 +434,7 @@ const WatchedMovie = ({ movie, onDeleteWatched }) => {
           <span>⏳</span>
           <span>{movie.runtime} min</span>
         </p>
-        <button className="btn-delete" onClick={()=>onDeleteWatched(movie.imdbID)}>X</button>
+        <button className="btn-delete" onClick={() => onDeleteWatched(movie.imdbID)}>X</button>
       </div>
     </li>
   );
