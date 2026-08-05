@@ -56,7 +56,11 @@ const KEY = '86e5ee43';
 export default function App() {
   const [query, setQuery] = useState("");
   const [movies, setMovies] = useState([]);
-  const [watched, setWatched] = useState([]);
+  // const [watched, setWatched] = useState([]);
+  const [watched, setWatched] = useState(()=>{
+    const storedValue = localStorage.getItem('watched')
+    return JSON.parse(storedValue)
+  })
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [selectedId, setSelectedId] = useState(null);
@@ -86,12 +90,18 @@ export default function App() {
   };
 
   const handleAddWatched = (movie) => {
-    setWatched(watched => [...watched, movie])
+    setWatched(watched => [...watched, movie]);
+
+
   };
 
   const handleDeleteWached = (id) => {
     setWatched((watched) => watched.filter((movie) => movie.imdbID !== id))
   };
+
+  useEffect(() => {
+    localStorage.setItem('watched', JSON.stringify(watched))
+  }, [watched])
 
   useEffect(() => {
 
@@ -328,68 +338,68 @@ const MovieDetails = ({ selectedId, onCloseMovie, onAddWatched, watched }) => {
         onCloseMovie();
       }
     }
-    
-      document.addEventListener('keydown', callback);
 
-  return () => { document.removeEventListener('keydown', callback) }
+    document.addEventListener('keydown', callback);
 
-}, [onCloseMovie]);
+    return () => { document.removeEventListener('keydown', callback) }
 
-useEffect(() => {
-  const getMovieDetails = async () => {
-    setIsLoading(true);
-    const res = await fetch(`http://www.omdbapi.com/?apikey=${KEY}&i=${selectedId}`);
-    const data = await res.json();
-    setMovie(data);
-    setIsLoading(false);
-  }
-  getMovieDetails();
-}, [selectedId])
+  }, [onCloseMovie]);
 
-useEffect(() => {
-  if (!title) return;
-  document.title = `Movie | ${title}`;
-  return () => {
-    document.title = 'usePopcorn';
-  }
-}, [title])
-
-return (
-  <div className="details">
-    {isLoading ? <Loader /> :
-      <>
-        <header>
-          <button className="btn-back" onClick={onCloseMovie}>
-            &larr;
-          </button>
-          <img src={poster} alt={`Poster of ${movie} movie`} />
-          <div className="details-overview">
-            <h2>{title}</h2>
-            <p>{released} &bull; {runtime}</p>
-            <p>{genre}</p>
-            <p><span>⭐</span>{imdbRating} IMDb rating</p>
-          </div>
-        </header>
-
-        <section>
-          <div className="rating">
-
-            {!isWatched ?
-              <>
-                <StarRating maxRating={10} size={24} onSetRating={setUserRating} />
-                {userRating > 0 && (<button className="btn-add" onClick={handleAdd}>Add to list</button>)}
-              </>
-              :
-              <p>You rated this movie {isWatched.userRating} <span>⭐</span></p>}
-          </div>
-          <p><em>{plot}</em></p>
-          <p>Starring {actors}</p>
-          <p>Directed by {director}</p>
-        </section>
-      </>
+  useEffect(() => {
+    const getMovieDetails = async () => {
+      setIsLoading(true);
+      const res = await fetch(`http://www.omdbapi.com/?apikey=${KEY}&i=${selectedId}`);
+      const data = await res.json();
+      setMovie(data);
+      setIsLoading(false);
     }
-  </div>
-)
+    getMovieDetails();
+  }, [selectedId])
+
+  useEffect(() => {
+    if (!title) return;
+    document.title = `Movie | ${title}`;
+    return () => {
+      document.title = 'usePopcorn';
+    }
+  }, [title])
+
+  return (
+    <div className="details">
+      {isLoading ? <Loader /> :
+        <>
+          <header>
+            <button className="btn-back" onClick={onCloseMovie}>
+              &larr;
+            </button>
+            <img src={poster} alt={`Poster of ${movie} movie`} />
+            <div className="details-overview">
+              <h2>{title}</h2>
+              <p>{released} &bull; {runtime}</p>
+              <p>{genre}</p>
+              <p><span>⭐</span>{imdbRating} IMDb rating</p>
+            </div>
+          </header>
+
+          <section>
+            <div className="rating">
+
+              {!isWatched ?
+                <>
+                  <StarRating maxRating={10} size={24} onSetRating={setUserRating} />
+                  {userRating > 0 && (<button className="btn-add" onClick={handleAdd}>Add to list</button>)}
+                </>
+                :
+                <p>You rated this movie {isWatched.userRating} <span>⭐</span></p>}
+            </div>
+            <p><em>{plot}</em></p>
+            <p>Starring {actors}</p>
+            <p>Directed by {director}</p>
+          </section>
+        </>
+      }
+    </div>
+  )
 };
 
 const WatchedSummary = ({ watched }) => {
