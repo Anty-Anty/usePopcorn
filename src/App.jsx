@@ -2,6 +2,7 @@ import { Children, useEffect, useRef, useState } from "react";
 import StarRating from "./StarRating";
 import { useMovies } from "./useMovies";
 import { useLocalStorageState } from "./useLocalStorageState";
+import { useKey } from "./useKey";
 
 const tempMovieData = [
   {
@@ -58,17 +59,17 @@ const KEY = '86e5ee43';
 export default function App() {
   const [query, setQuery] = useState("");
   const { movies, isLoading, error } = useMovies(query);
-  
+
   const [selectedId, setSelectedId] = useState(null);
-  
+
   const [watched, setWatched] = useLocalStorageState([], "watched");
-  
+
   // const [watched, setWatched] = useState([]);
   // const [watched, setWatched] = useState(() => {
   //   const storedValue = localStorage.getItem('watched')
   //   return JSON.parse(storedValue)
   // })
-  
+
   // useEffect(function () {
   //   console.log('A')
   // }, []);
@@ -167,18 +168,13 @@ const Search = ({ query, setQuery }) => {
 
   const inputEl = useRef(null);
 
-  useEffect(() => {
-    const callback = (e) => {
+  useKey('Enter', function () {
+    if (document.activeElement === inputEl.current) return;
 
-      if(document.activeElement === inputEl.current) return;
-      if (e.code === "Enter") {
-        inputEl.current.focus();
-        setQuery("");
-      }
-    }
-    document.addEventListener('keydown', callback);
-    return () => document.addEventListener('keydown', callback);
-  }, [setQuery]);
+    inputEl.current.focus();
+    setQuery("");
+  })
+
 
   return (
     <input
@@ -297,19 +293,7 @@ const MovieDetails = ({ selectedId, onCloseMovie, onAddWatched, watched }) => {
     onCloseMovie();
   };
 
-  useEffect(() => {
-
-    const callback = (e) => {
-      if (e.code === 'Escape') {
-        onCloseMovie();
-      }
-    }
-
-    document.addEventListener('keydown', callback);
-
-    return () => { document.removeEventListener('keydown', callback) }
-
-  }, [onCloseMovie]);
+  useKey('Escape', onCloseMovie);
 
   useEffect(() => {
     const getMovieDetails = async () => {
