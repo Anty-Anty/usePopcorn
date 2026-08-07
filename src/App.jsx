@@ -1,5 +1,6 @@
 import { Children, useEffect, useRef, useState } from "react";
 import StarRating from "./StarRating";
+import { useMovies } from "./useMovies";
 
 const tempMovieData = [
   {
@@ -55,14 +56,13 @@ const KEY = '86e5ee43';
 
 export default function App() {
   const [query, setQuery] = useState("");
-  const [movies, setMovies] = useState([]);
   // const [watched, setWatched] = useState([]);
-  const [watched, setWatched] = useState(()=>{
+  const [watched, setWatched] = useState(() => {
     const storedValue = localStorage.getItem('watched')
     return JSON.parse(storedValue)
   })
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState('');
+  const { movies, isLoading, error } = useMovies(query);
+
   const [selectedId, setSelectedId] = useState(null);
 
 
@@ -102,53 +102,6 @@ export default function App() {
   useEffect(() => {
     localStorage.setItem('watched', JSON.stringify(watched))
   }, [watched])
-
-  useEffect(() => {
-
-    const controller = new AbortController();
-
-    async function fetchMovies() {
-      try {
-        setIsLoading(true);
-        setError('');
-        const res = await fetch(`http://www.omdbapi.com/?apikey=${KEY}&s=${query}`,
-          { signal: controller.signal });
-
-        if (!res.ok) throw new Error("Something went wrong with fetching movies")
-
-
-        const data = await res.json();
-        if (data.Response === 'False') throw new Error("Movie is not found")
-
-        setMovies(data.Search);
-        setError('');
-      } catch (err) {
-        console.error(err.message)
-        if (err.name !== "AbortError") {
-          setError(err.message)
-        }
-      } finally {
-        setIsLoading(false);
-      }
-    }
-
-    if (!query.length) {
-      setMovies([]);
-      setError('');
-      return
-    }
-
-    handleCloseMovie();
-    fetchMovies();
-
-    return () => {
-      controller.abort();
-    }
-
-  }, [query])
-
-
-
 
 
   return (
@@ -217,9 +170,18 @@ const Search = ({ query, setQuery }) => {
 
   const inputEl = useRef(null);
 
-  useEffect(()=>{
-    inputEl.current.focus()
-  },[]);
+  useEffect(() => {
+    const callback = (e) => {
+
+      if(document.activeElement === inputEl.current) return;
+      if (e.code === "Enter") {
+        inputEl.current.focus();
+        setQuery("");
+      }
+    }
+    document.addEventListener('keydown', callback);
+    return () => document.addEventListener('keydown', callback);
+  }, [setQuery]);
 
   return (
     <input
